@@ -1,6 +1,7 @@
+using TMPro;
 using UnityEngine;
 
-public abstract class Weapon : MonoBehaviour
+public class Weapon : MonoBehaviour
 {
     // The location in space where the projectiles (or raycast) will be spawned.
     [SerializeField] protected Transform firePoint;
@@ -15,19 +16,48 @@ public abstract class Weapon : MonoBehaviour
     [SerializeField] protected float fireRate;
 
     // How many bullets this weapon can hold.
-    [SerializeField] protected float bulletCount;
+    [SerializeField] protected int bulletCount;
+
+    [SerializeField] protected int maxCapacity;
+
+    [SerializeField] protected int spareRounds;
+
+    [SerializeField] TMP_Text textUI;
 
     protected virtual void Start()
     {
         // Code to initialize the weapon.
+        textUI.text = bulletCount + " / " + spareRounds;
     }
 
-    protected virtual void Shoot()
+    public void Shoot()
     {
-        // Code to shoot the weapon.
+        if (bulletCount != 0) {
+            RaycastHit hit;
+            Debug.DrawRay(firePoint.position, firePoint.forward * range, Color.red, 1f);
+            if (Physics.Raycast(firePoint.position, firePoint.forward, out hit, range))
+            {
+                Debug.Log(hit.transform.name);
+            }
+
+            bulletCount--;
+        }
+
+        textUI.text = bulletCount + " / " + spareRounds;
     }
-    protected virtual void Reload()
+    public void Reload()
     {
-        // Code to reload the weapon.
+        if (spareRounds >= maxCapacity)
+        {
+            spareRounds -= maxCapacity - bulletCount;
+            bulletCount = maxCapacity;
+            
+        } else
+        {
+            bulletCount = spareRounds;
+            spareRounds -= spareRounds;
+        }
+
+        textUI.text = bulletCount + " / " + spareRounds;
     }
 }

@@ -26,6 +26,8 @@ public class PlayerController : MonoBehaviour
     [Tooltip("Gravity force applied to the player.")]
     [SerializeField] float gravity;
 
+    [SerializeField] GameObject equippedWeapon;
+
     // Used to store the forward and backward movement input.
     private float moveFB;
     // Used to store the right and left movement input.
@@ -64,6 +66,16 @@ public class PlayerController : MonoBehaviour
     {
         // Check every frame for movement input and apply the movement.
         Move();
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            equippedWeapon.GetComponent<Weapon>().Shoot();
+        }
+
+        if (Input.GetButtonDown("Reload"))
+        {
+            equippedWeapon.GetComponent<Weapon>().Reload();
+        }
     }
 
     // This method handles all player movement input and moves the Player accordingly.
@@ -158,4 +170,5 @@ public class PlayerController : MonoBehaviour
         **/
         #endregion
     }
+
 }
