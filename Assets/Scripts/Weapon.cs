@@ -1,63 +1,61 @@
-using TMPro;
+using System.Collections;
 using UnityEngine;
 
-public class Weapon : MonoBehaviour
+public abstract class Weapon : MonoBehaviour
 {
     // The location in space where the projectiles (or raycast) will be spawned.
     [SerializeField] protected Transform firePoint;
 
     // How much damage this weapon does.
-    [SerializeField] protected float damage;
+    [SerializeField] protected int damage;
 
     // The range of this weapon.
     [SerializeField] protected float range;
-
-    // How quickly this weapon can fire.
-    [SerializeField] protected float fireRate;
-
-    // How many bullets this weapon can hold.
+    [SerializeField] protected float firerate;
     [SerializeField] protected int bulletCount;
-
     [SerializeField] protected int maxCapacity;
 
-    [SerializeField] protected int spareRounds;
 
-    [SerializeField] TMP_Text textUI;
+    [SerializeField] protected PlayerController playerController;
 
-    protected virtual void Start()
+    protected void Awake()
     {
-        // Code to initialize the weapon.
-        textUI.text = bulletCount + " / " + spareRounds;
+        playerController = GameObject.Find("--- Player ---").GetComponent<PlayerController>();
     }
 
-    public void Shoot()
+    protected void Start()
     {
-        if (bulletCount != 0) {
-            RaycastHit hit;
-            Debug.DrawRay(firePoint.position, firePoint.forward * range, Color.red, 1f);
-            if (Physics.Raycast(firePoint.position, firePoint.forward, out hit, range))
-            {
-                Debug.Log(hit.transform.name);
-            }
-
-            bulletCount--;
-        }
-
-        textUI.text = bulletCount + " / " + spareRounds;
+        //Updates the UI at the start.
+        UIManager.Instance.UpdateAmmoUI(bulletCount, playerController.SpareRounds);
     }
-    public void Reload()
+
+    //Handles the shooting behavior of the weapon.
+    protected virtual void Shoot()
     {
-        if (spareRounds >= maxCapacity)
+        UIManager.Instance.UpdateAmmoUI(bulletCount, playerController.SpareRounds);
+        if (bulletCount <= 0)
         {
-            spareRounds -= maxCapacity - bulletCount;
+            Reload();
+        }
+    }
+
+    //Handles the shooting behavior of the weapon.
+    protected virtual void Reload()
+    {
+        StartCoroutine(ReloadCoroutine());
+    }
+
+    // A coroutine that waits for a second before reloading the weapon.
+    protected IEnumerator ReloadCoroutine()
+    {
+        yield return new WaitForSeconds(1f);
+
+        if(playerController.SpareRounds >= maxCapacity)
+        {
             bulletCount = maxCapacity;
-            
-        } else
-        {
-            bulletCount = spareRounds;
-            spareRounds -= spareRounds;
+            playerController.SpareRounds -= maxCapacity;
         }
 
-        textUI.text = bulletCount + " / " + spareRounds;
+        UIManager.Instance.UpdateAmmoUI(bulletCount, playerController.SpareRounds);
     }
 }
